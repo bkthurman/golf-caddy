@@ -853,7 +853,34 @@
             const n = parseInt(value, 10);
             scores[holeIdx] = (isNaN(n) || n <= 0) ? null : n;
             saveScores();
-            renderScorecard();
+            refreshScorecardTotals(holeIdx);
+        }
+
+        // Patches totals/diff labels in place rather than re-rendering the table,
+        // so score <input> elements are never recreated and keyboard tab order survives.
+        function refreshScorecardTotals(holeIdx) {
+            const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+            const diffEl = document.getElementById(`sc-diff-${holeIdx}`);
+            if (diffEl) {
+                const s = scores[holeIdx];
+                const diff = s == null ? 0 : s - courseData[holeIdx].par;
+                diffEl.className = `sc-diff ${diff < 0 ? 'under' : diff > 0 ? 'over' : ''}`;
+                diffEl.textContent = diff === 0 ? '' : (diff > 0 ? `+${diff}` : `${diff}`);
+            }
+
+            const out = sumRange(0, 9);
+            const inn = sumRange(9, 18);
+            const tot = (out != null && inn != null) ? out + inn : null;
+            const parTotal = courseData.reduce((a, d) => a + d.par, 0);
+            const toPar = tot == null ? null : tot - parTotal;
+
+            setText('sc-front-total', out == null ? '—' : out);
+            setText('sc-back-total', inn == null ? '—' : inn);
+            setText('sc-val-out', out == null ? '—' : out);
+            setText('sc-val-in', inn == null ? '—' : inn);
+            setText('sc-val-tot', tot == null ? '—' : tot);
+            setText('sc-val-topar', toPar == null ? '—' : (toPar > 0 ? '+' + toPar : toPar));
         }
 
         function resetScores() {
@@ -873,12 +900,10 @@
 
         function scoreDiffLabel(holeIdx) {
             const s = scores[holeIdx];
-            if (s == null) return '';
-            const diff = s - courseData[holeIdx].par;
-            if (diff === 0) return '';
-            const cls = diff < 0 ? 'under' : 'over';
-            const label = diff > 0 ? `+${diff}` : `${diff}`;
-            return `<span class="sc-diff ${cls}">${label}</span>`;
+            const diff = s == null ? 0 : s - courseData[holeIdx].par;
+            const cls = diff < 0 ? 'under' : diff > 0 ? 'over' : '';
+            const label = diff === 0 ? '' : (diff > 0 ? `+${diff}` : `${diff}`);
+            return `<span class="sc-diff ${cls}" id="sc-diff-${holeIdx}">${label}</span>`;
         }
 
         function renderNineTable(startIdx, endIdx, title) {
@@ -893,6 +918,7 @@
             }
             const total = sumRange(startIdx, endIdx);
             const parTotal = courseData.slice(startIdx, endIdx).reduce((a, d) => a + d.par, 0);
+            const totalId = title === 'Front 9' ? 'sc-front-total' : 'sc-back-total';
             return `
                 <div class="scorecard-card">
                     <h3>${title} (Par ${parTotal})</h3>
@@ -901,7 +927,7 @@
                             <tr><td class="sc-label">Hole</td>${holeCells}<td class="sc-total">${title === 'Front 9' ? 'Out' : 'In'}</td></tr>
                             <tr><td class="sc-label">Par</td>${parCells}<td class="sc-total">${parTotal}</td></tr>
                             <tr><td class="sc-label">Hcp</td>${hcpCells}<td class="sc-total">—</td></tr>
-                            <tr><td class="sc-label">Score</td>${scoreCells}<td class="sc-total">${total == null ? '—' : total}</td></tr>
+                            <tr><td class="sc-label">Score</td>${scoreCells}<td class="sc-total" id="${totalId}">${total == null ? '—' : total}</td></tr>
                         </table>
                     </div>
                 </div>`;
@@ -919,10 +945,10 @@
                 ${renderNineTable(9, 18, 'Back 9')}
                 <div class="scorecard-card">
                     <div class="sc-summary">
-                        <div class="sc-summary-item"><div class="sc-summary-value">${out == null ? '—' : out}</div><div class="sc-summary-label">Out</div></div>
-                        <div class="sc-summary-item"><div class="sc-summary-value">${inn == null ? '—' : inn}</div><div class="sc-summary-label">In</div></div>
-                        <div class="sc-summary-item"><div class="sc-summary-value">${tot == null ? '—' : tot}</div><div class="sc-summary-label">Total</div></div>
-                        <div class="sc-summary-item"><div class="sc-summary-value">${toPar == null ? '—' : (toPar > 0 ? '+' + toPar : toPar)}</div><div class="sc-summary-label">To Par</div></div>
+                        <div class="sc-summary-item"><div class="sc-summary-value" id="sc-val-out">${out == null ? '—' : out}</div><div class="sc-summary-label">Out</div></div>
+                        <div class="sc-summary-item"><div class="sc-summary-value" id="sc-val-in">${inn == null ? '—' : inn}</div><div class="sc-summary-label">In</div></div>
+                        <div class="sc-summary-item"><div class="sc-summary-value" id="sc-val-tot">${tot == null ? '—' : tot}</div><div class="sc-summary-label">Total</div></div>
+                        <div class="sc-summary-item"><div class="sc-summary-value" id="sc-val-topar">${toPar == null ? '—' : (toPar > 0 ? '+' + toPar : toPar)}</div><div class="sc-summary-label">To Par</div></div>
                     </div>
                     <button class="sc-reset" onclick="resetScores()">Reset Round</button>
                 </div>`;
