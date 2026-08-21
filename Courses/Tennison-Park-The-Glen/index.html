@@ -667,6 +667,49 @@
         let scores = new Array(TOTAL_HOLES).fill(null);
         let rangeOn = false;
         let rangeWatchId = null;
+        let lastRangePos = null;
+
+        // Full-bag distances per golfer profile, farthest to shortest, for club-selection
+        // suggestions. Provided directly by the user — not extrapolated.
+        const CLUB_TABLES = {
+            exp: [
+                { club: 'Driver', yards: 260 },
+                { club: '3-Wood', yards: 230 },
+                { club: 'Hybrid 2', yards: 215 },
+                { club: 'Hybrid 4', yards: 202 },
+                { club: '4-Iron', yards: 185 },
+                { club: '5-Iron', yards: 172 },
+                { club: '6-Iron', yards: 158 },
+                { club: '7-Iron', yards: 145 },
+                { club: '8-Iron', yards: 134 },
+                { club: '9-Iron', yards: 123 },
+                { club: 'PW', yards: 109 },
+                { club: 'GW', yards: 98 },
+                { club: 'SW', yards: 78 }
+            ],
+            beg: [
+                { club: 'Driver', yards: 200 },
+                { club: '3-Wood', yards: 180 },
+                { club: 'Hybrid 2', yards: 168 },
+                { club: 'Hybrid 4', yards: 160 },
+                { club: '4-Iron', yards: 156 },
+                { club: '5-Iron', yards: 149 },
+                { club: '6-Iron', yards: 140 },
+                { club: '7-Iron', yards: 128 },
+                { club: '8-Iron', yards: 119 },
+                { club: '9-Iron', yards: 109 },
+                { club: 'PW', yards: 100 },
+                { club: 'GW', yards: 85 },
+                { club: 'SW', yards: 65 }
+            ]
+        };
+
+        function nearestClub(yards, profile) {
+            const table = CLUB_TABLES[profile];
+            return table.reduce((best, entry) =>
+                Math.abs(entry.yards - yards) < Math.abs(best.yards - yards) ? entry : best
+            ).club;
+        }
 
         function loadState() {
             try {
@@ -778,6 +821,7 @@
             document.getElementById('btnExp').classList.toggle('active', type === 'exp');
             document.getElementById('btnBeg').classList.toggle('active', type === 'beg');
             renderSummary();
+            if (rangeOn) updateRangeReading();
             saveState();
         }
 
@@ -812,10 +856,13 @@
         function updateRangeReading(pos) {
             const reading = document.getElementById('rangeReading');
             if (!reading) return;
+            if (pos) lastRangePos = pos;
+            const usePos = pos || lastRangePos;
             const green = GLEN_GREENS[currentHole];
-            if (!pos || !green) return;
-            const yd = haversineYards(pos.coords.latitude, pos.coords.longitude, green.lat, green.lon);
-            reading.innerText = `${Math.round(yd)} yds to green`;
+            if (!usePos || !green) return;
+            const yd = haversineYards(usePos.coords.latitude, usePos.coords.longitude, green.lat, green.lon);
+            const club = nearestClub(yd, currentGolfer);
+            reading.innerText = `${Math.round(yd)} yds to green · ${club} suggested`;
         }
 
         function toggleRangefinder() {
