@@ -615,7 +615,7 @@
                 <span>🧭 SE→S midround</span>
             </div>
             <div class="profile-bar">
-                <span>16 HCP: 260/145, White</span>
+                <span>12 HCP: 260/145, White</span>
                 <span>30-36 HCP: 200/128, 2 White · 1 Red</span>
                 <button class="info-toggle" id="btnClubInfo" onclick="toggleClubInfo()" aria-label="Show full club distance tables">ⓘ Clubs</button>
             </div>
@@ -643,7 +643,7 @@
                 <div class="diagram-card" id="diagramCard"></div>
                 <div class="strategy-card">
                     <div class="toggle-container">
-                        <button class="toggle-btn active" id="btnExp" onclick="setGolferType('exp')">16 HCP</button>
+                        <button class="toggle-btn active" id="btnExp" onclick="setGolferType('exp')">12 HCP</button>
                         <button class="toggle-btn" id="btnBeg" onclick="setGolferType('beg')">30-36 HCP</button>
                     </div>
                     <div id="summaryArea"></div>
@@ -784,7 +784,7 @@
             panel.innerHTML = `
                 <h3>Club Distances</h3>
                 <div class="club-info-cols">
-                    ${clubTableHTML('exp', '16 HCP')}
+                    ${clubTableHTML('exp', '12 HCP')}
                     ${clubTableHTML('beg', '30-36 HCP')}
                 </div>`;
             panel.style.display = '';
