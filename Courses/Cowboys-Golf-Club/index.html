@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cowboys GC - Pro Caddy Field Manual</title>
+    <style>
+        :root {
+            --bg-dark: #10161a;
+            --bg-darker: #0a0e11;
+            --card-bg: #1e262c;
+            --card-bg-2: #232c33;
+            --accent-green: #2e7d32;
+            --accent-green-2: #43a047;
+            --accent-gold: #d4af37;
+            --accent-gold-2: #f0d878;
+            --text-light: #eceff1;
+            --text-dim: #b0bec5;
+            --border-color: #2c3840;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            background-color: var(--bg-darker);
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 0%, #17211f 0%, var(--bg-dark) 45%, var(--bg-darker) 100%);
+            background-attachment: fixed;
+            color: var(--text-light);
+            padding: 10px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-shell {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #234a29 0%, #14311a 45%, #0d1f12 100%);
+            padding: 14px 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #2e5a35;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: "";
+            position: absolute;
+            top: -60%;
+            left: -20%;
+            width: 140%;
+            height: 200%;
+            background: linear-gradient(115deg, rgba(212,175,55,0.10) 0%, rgba(212,175,55,0) 35%);
+            pointer-events: none;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, var(--accent-gold-2), var(--accent-gold) 60%, #a8842a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 2px;
+        }
+
+        header p {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .conditions-bar {
+            display: flex;
+            justify-content: space-around;
+            background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.25));
+            margin-top: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #ffd54f;
+            gap: 4px;
+        }
+
+        .profile-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            padding: 5px 6px;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            gap: 4px 10px;
+            border-top: 1px dashed rgba(212,175,55,0.25);
+        }
+
+        .info-toggle {
+            border: 1px solid rgba(212,175,55,0.4);
+            background: rgba(212,175,55,0.08);
+            color: var(--accent-gold-2);
+            font-size: 0.66rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .club-info-panel {
+            background: linear-gradient(160deg, var(--card-bg-2), var(--card-bg));
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .club-info-panel h3 {
+            color: var(--accent-gold);
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .club-info-cols {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .club-info-cols table {
+            flex: 1 1 140px;
+            min-width: 140px;
+            border-collapse: collapse;
+        }
+
+        .club-info-cols caption {
+            text-align: left;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .club-info-cols td {
+            font-size: 0.75rem;
+            padding: 3px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .club-info-cols td.ci-yd {
+            text-align: right;
+            color: var(--accent-gold-2);
+            font-weight: bold;
+        }
+
+        /* Hole scan strip: prev/next + counter for one-handed / driving use */
+        .scan-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .scan-btn {
+            flex: 0 0 auto;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 1px solid #3c4d3f;
+            background: linear-gradient(160deg, #2e7d32, #1b4d1f);
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+            touch-action: manipulation;
+        }
+
+        .scan-btn:active {
+            filter: brightness(0.85);
+            transform: scale(0.96);
+        }
+
+        .hole-counter {
+            flex: 1;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 6px;
+            padding: 4px 0 10px 0;
+            margin-bottom: 4px;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .tab-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            flex: 0 0 auto;
+            background: linear-gradient(160deg, var(--card-bg-2), var(--card-bg));
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(160deg, var(--accent-green-2), #1b5e20);
+            color: #ffffff;
+            border-color: #66bb6a;
+            box-shadow: 0 2px 8px rgba(46,125,50,0.5);
+        }
+
+        .tab-btn.scorecard-btn {
+            background: linear-gradient(160deg, var(--accent-gold-2), #a8842a);
+            color: #2a2005;
+            border-color: var(--accent-gold);
+        }
+
+        .tab-btn.scorecard-btn.active {
+            background: linear-gradient(160deg, #ffe082, var(--accent-gold));
+            color: #2a2005;
+            border-color: var(--accent-gold-2);
+            box-shadow: 0 2px 8px rgba(212,175,55,0.5);
+        }
+
+        .range-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: linear-gradient(160deg, var(--card-bg-2), var(--card-bg));
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .range-toggle {
+            border: 1px solid var(--border-color);
+            background: linear-gradient(160deg, #33424a, #202a2f);
+            color: var(--text-dim);
+            font-weight: bold;
+            font-size: 0.78rem;
+            padding: 7px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .range-toggle.on {
+            background: linear-gradient(160deg, var(--accent-green-2), #1b5e20);
+            color: #fff;
+            border-color: #66bb6a;
+        }
+
+        .range-reading {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--accent-gold-2);
+            letter-spacing: 0.3px;
+        }
+
+        /* Scorecard */
+        .scorecard-card {
+            background: linear-gradient(160deg, var(--card-bg-2), var(--card-bg));
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .scorecard-card h3 {
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sc-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table.sc-table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 620px;
+        }
+
+        table.sc-table th, table.sc-table td {
+            border: 1px solid var(--border-color);
+            text-align: center;
+            padding: 5px 4px;
+            font-size: 0.78rem;
+        }
+
+        table.sc-table th {
+            background: rgba(212,175,55,0.12);
+            color: var(--accent-gold-2);
+            font-weight: bold;
+        }
+
+        table.sc-table td.sc-label {
+            text-align: left;
+            font-weight: bold;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        table.sc-table td.sc-total {
+            font-weight: bold;
+            color: var(--accent-gold-2);
+            background: rgba(212,175,55,0.08);
+        }
+
+        table.sc-table input.sc-score {
+            width: 34px;
+            text-align: center;
+            background: #0d1215;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 4px;
+            padding: 4px 0;
+            font-size: 0.85rem;
+        }
+
+        table.sc-table input.sc-score:focus {
+            outline: 1px solid var(--accent-gold);
+        }
+
+        .sc-diff {
+            font-size: 0.7rem;
+            display: block;
+            margin-top: 1px;
+        }
+
+        .sc-diff.under { color: #66bb6a; }
+        .sc-diff.over { color: #ef5350; }
+
+        .sc-summary {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .sc-summary-item {
+            background: rgba(255,255,255,0.04);
+            border-radius: 6px;
+            padding: 8px 14px;
+            text-align: center;
+        }
+
+        .sc-summary-item .sc-summary-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--accent-gold-2);
+        }
+
+        .sc-summary-item .sc-summary-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .sc-reset {
+            display: block;
+            margin: 12px auto 0;
+            background: linear-gradient(160deg, #c62828, #8e1c1c);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .hole-info-header {
+            background: linear-gradient(160deg, var(--card-bg-2), var(--card-bg));
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--accent-gold);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .hole-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .badge-group {
+            display: flex;
+            gap: 4px;
+        }
+
+        .badge {
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            color: #fff;
+        }
+
+        .badge-white { background: linear-gradient(160deg, #43a047, #2e7d32); }
+        .badge-silver { background: linear-gradient(160deg, #b0bec5, #78909c); color: #12181b; }
+        .badge-hcp { background: linear-gradient(160deg, #48575f, #37474f); color: #eceff1; }
+
+        .content-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .diagram-card, .strategy-card {
+            background: linear-gradient(160deg, var(--card-bg-2), var(--card-bg));
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .diagram-card {
+            position: relative;
+            touch-action: pan-y;
+        }
+
+        .diagram-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            display: block;
+            object-fit: contain;
+            background-color: #151c20;
+            min-height: 150px;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .hole-map-svg {
+            width: 100%;
+            height: auto;
+            max-height: 420px;
+            display: block;
+            background: linear-gradient(180deg, #17211f, #0f1613);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .fairway-corridor {
+            fill: none;
+            stroke: #3f6b3a;
+            stroke-width: 30;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.55;
+        }
+
+        .fairway-centerline {
+            fill: none;
+            stroke: #d4af37;
+            stroke-width: 1.5;
+            stroke-dasharray: 4 4;
+            opacity: 0.6;
+        }
+
+        .tee-marker {
+            fill: #eceff1;
+            stroke: #12181b;
+            stroke-width: 1.5;
+        }
+
+        .green-marker {
+            fill: #4caf50;
+            stroke: #eceff1;
+            stroke-width: 2;
+        }
+
+        .hole-target {
+            fill: #ffca28;
+            stroke: #12181b;
+            stroke-width: 1;
+            opacity: 0.85;
+        }
+
+        .live-dot {
+            fill: #2979ff;
+            stroke: #ffffff;
+            stroke-width: 2.5;
+            opacity: 0;
+        }
+
+        .live-dot.on {
+            opacity: 1;
+            animation: pulseDot 1.6s ease-in-out infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { r: 7; }
+            50% { r: 9.5; }
+        }
+
+        .img-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            background-color: #151c20;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: 1px dashed var(--border-color);
+            text-align: center;
+            padding: 10px;
+        }
+
+        .toggle-container {
+            display: flex;
+            background: linear-gradient(180deg, #0d1215, #12181b);
+            padding: 3px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            gap: 4px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 10px 4px;
+            border: none;
+            background: none;
+            color: var(--text-dim);
+            font-weight: bold;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(160deg, #33424a, #202a2f);
+            color: var(--accent-gold-2);
+            box-shadow: inset 0 0 0 1px rgba(212,175,55,0.35);
+        }
+
+        .section-box {
+            margin-bottom: 8px;
+            background: linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+            padding: 8px 10px;
+            border-radius: 6px;
+            border-left: 3px solid #00897b;
+        }
+
+        .section-box.beg {
+            border-left-color: #fb8c00;
+        }
+
+        .section-box h4 {
+            color: var(--accent-gold);
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+
+        .section-box p {
+            font-size: 0.85rem;
+            line-height: 1.35;
+            color: #cfd8dc;
+        }
+
+        .green-detail {
+            background: linear-gradient(160deg, rgba(67,160,71,0.18), rgba(27,94,32,0.10));
+            border: 1px dashed #2e7d32;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #a5d6a7;
+        }
+
+        footer.hint {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            opacity: 0.6;
+            margin: 14px 0 4px;
+        }
+
+        /* Tablet / desktop: wider centered shell, side-by-side content */
+        @media (min-width: 720px) {
+            .app-shell {
+                max-width: 900px;
+            }
+
+            .content-grid {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            .diagram-card {
+                flex: 1 1 50%;
+                position: sticky;
+                top: 10px;
+            }
+
+            .strategy-card {
+                flex: 1 1 50%;
+            }
+
+            header h1 { font-size: 1.5rem; }
+            .hole-title { font-size: 1.35rem; }
+        }
+
+        /* Phone in landscape (car mount) — flatten header, go side-by-side sooner */
+        @media (max-height: 480px) and (orientation: landscape) {
+            header { padding: 6px 10px; margin-bottom: 6px; }
+            header p, .conditions-bar { display: none; }
+            header h1 { font-size: 1rem; }
+            .content-grid { flex-direction: row; }
+            .diagram-card { flex: 1 1 45%; }
+            .strategy-card { flex: 1 1 55%; }
+            .scan-btn { width: 44px; height: 44px; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header>
+            <h1>COWBOYS GC — CADDY GUIDE</h1>
+            <p>1600 Fairway Dr, Grapevine, TX 76051</p>
+            <div class="conditions-bar">
+                <span>🌡️ 77°→90°F</span>
+                <span>💨 9-13mph, gusts 24</span>
+                <span>🕗 Shotgun 8:00 AM</span>
+            </div>
+            <div class="profile-bar">
+                <span>12 HCP: 260/145, Blue Tee</span>
+                <span>Format: 4-Man Scramble</span>
+                <button class="info-toggle" id="btnClubInfo" onclick="toggleClubInfo()" aria-label="Show full club distance table">ⓘ Clubs</button>
+            </div>
+        </header>
+
+        <div class="club-info-panel" id="clubInfoPanel" style="display:none;"></div>
+
+        <div class="scan-bar">
+            <button class="scan-btn" id="btnPrev" aria-label="Previous hole" onclick="stepHole(-1)">‹</button>
+            <div class="hole-counter" id="holeCounter">HOLE 1 OF 18</div>
+            <button class="scan-btn" id="btnNext" aria-label="Next hole" onclick="stepHole(1)">›</button>
+        </div>
+
+        <div class="tab-container" id="tabContainer"></div>
+
+        <div id="holeView">
+            <div class="hole-info-header" id="holeHeader"></div>
+
+            <div class="range-bar">
+                <button class="range-toggle" id="btnRange" onclick="toggleRangefinder()">📍 Rangefinder Off</button>
+                <span class="range-reading" id="rangeReading"></span>
+            </div>
+
+            <div class="content-grid">
+                <div class="diagram-card" id="diagramCard"></div>
+                <div class="strategy-card">
+                    <div class="toggle-container">
+                        <button class="toggle-btn active" id="btnExp" onclick="setGolferType('exp')">Stroke Play</button>
+                        <button class="toggle-btn" id="btnBeg" onclick="setGolferType('beg')">Scramble</button>
+                    </div>
+                    <div id="summaryArea"></div>
+                </div>
+            </div>
+
+            <footer class="hint">Swipe or use ‹ › to move between holes</footer>
+        </div>
+
+        <div id="scorecardView" style="display:none;"></div>
+    </div>
+
+    <script>
+        const COWBOYS_SVG = {
+            1: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg1"> <path d="M 84.3,424.0 L 209.3,231.5 L 215.7,78.6 L 196.7,36.0" class="fairway-corridor"/> <path d="M 84.3,424.0 L 209.3,231.5 L 215.7,78.6 L 196.7,36.0" class="fairway-centerline"/> <circle cx="209.3" cy="231.5" r="4" class="hole-target"/><circle cx="215.7" cy="78.6" r="4" class="hole-target"/> <circle cx="84.3" cy="424.0" r="6" class="tee-marker"/> <circle cx="196.7" cy="36.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot1"/> </svg>`,
+            2: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg2"> <path d="M 82.8,424.0 L 210.3,143.6 L 217.2,36.0" class="fairway-corridor"/> <path d="M 82.8,424.0 L 210.3,143.6 L 217.2,36.0" class="fairway-centerline"/> <circle cx="210.3" cy="143.6" r="4" class="hole-target"/> <circle cx="82.8" cy="424.0" r="6" class="tee-marker"/> <circle cx="217.2" cy="36.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot2"/> </svg>`,
+            3: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg3"> <path d="M 36.0,295.2 L 264.0,164.8" class="fairway-corridor"/> <path d="M 36.0,295.2 L 264.0,164.8" class="fairway-centerline"/> <circle cx="36.0" cy="295.2" r="6" class="tee-marker"/> <circle cx="264.0" cy="164.8" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot3"/> </svg>`,
+            4: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg4"> <path d="M 163.7,424.0 L 136.3,122.8 L 163.2,36.0" class="fairway-corridor"/> <path d="M 163.7,424.0 L 136.3,122.8 L 163.2,36.0" class="fairway-centerline"/> <circle cx="136.3" cy="122.8" r="4" class="hole-target"/> <circle cx="163.7" cy="424.0" r="6" class="tee-marker"/> <circle cx="163.2" cy="36.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot4"/> </svg>`,
+            5: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg5"> <path d="M 264.0,322.1 L 141.2,194.7 L 36.0,137.9" class="fairway-corridor"/> <path d="M 264.0,322.1 L 141.2,194.7 L 36.0,137.9" class="fairway-centerline"/> <circle cx="141.2" cy="194.7" r="4" class="hole-target"/> <circle cx="264.0" cy="322.1" r="6" class="tee-marker"/> <circle cx="36.0" cy="137.9" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot5"/> </svg>`,
+            6: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg6"> <path d="M 36.2,424.0 L 263.8,36.0" class="fairway-corridor"/> <path d="M 36.2,424.0 L 263.8,36.0" class="fairway-centerline"/> <circle cx="36.2" cy="424.0" r="6" class="tee-marker"/> <circle cx="263.8" cy="36.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot6"/> </svg>`,
+            7: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg7"> <path d="M 36.0,248.6 L 178.4,211.4 L 264.0,228.0" class="fairway-corridor"/> <path d="M 36.0,248.6 L 178.4,211.4 L 264.0,228.0" class="fairway-centerline"/> <circle cx="178.4" cy="211.4" r="4" class="hole-target"/> <circle cx="36.0" cy="248.6" r="6" class="tee-marker"/> <circle cx="264.0" cy="228.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot7"/> </svg>`,
+            8: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg8"> <path d="M 264.0,234.9 L 133.4,208.1 L 64.3,251.9 L 36.0,250.0" class="fairway-corridor"/> <path d="M 264.0,234.9 L 133.4,208.1 L 64.3,251.9 L 36.0,250.0" class="fairway-centerline"/> <circle cx="133.4" cy="208.1" r="4" class="hole-target"/><circle cx="64.3" cy="251.9" r="4" class="hole-target"/> <circle cx="264.0" cy="234.9" r="6" class="tee-marker"/> <circle cx="36.0" cy="250.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot8"/> </svg>`,
+            9: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg9"> <path d="M 36.0,288.9 L 181.0,187.1 L 264.0,171.1" class="fairway-corridor"/> <path d="M 36.0,288.9 L 181.0,187.1 L 264.0,171.1" class="fairway-centerline"/> <circle cx="181.0" cy="187.1" r="4" class="hole-target"/> <circle cx="36.0" cy="288.9" r="6" class="tee-marker"/> <circle cx="264.0" cy="171.1" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot9"/> </svg>`,
+            10: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg10"> <path d="M 36.0,331.0 L 231.7,204.6 L 264.0,129.0" class="fairway-corridor"/> <path d="M 36.0,331.0 L 231.7,204.6 L 264.0,129.0" class="fairway-centerline"/> <circle cx="231.7" cy="204.6" r="4" class="hole-target"/> <circle cx="36.0" cy="331.0" r="6" class="tee-marker"/> <circle cx="264.0" cy="129.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot10"/> </svg>`,
+            11: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg11"> <path d="M 227.2,36.0 L 100.9,291.1 L 72.8,424.0" class="fairway-corridor"/> <path d="M 227.2,36.0 L 100.9,291.1 L 72.8,424.0" class="fairway-centerline"/> <circle cx="100.9" cy="291.1" r="4" class="hole-target"/> <circle cx="227.2" cy="36.0" r="6" class="tee-marker"/> <circle cx="72.8" cy="424.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot11"/> </svg>`,
+            12: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg12"> <path d="M 82.5,424.0 L 162.5,161.3 L 217.5,36.0" class="fairway-corridor"/> <path d="M 82.5,424.0 L 162.5,161.3 L 217.5,36.0" class="fairway-centerline"/> <circle cx="162.5" cy="161.3" r="4" class="hole-target"/> <circle cx="82.5" cy="424.0" r="6" class="tee-marker"/> <circle cx="217.5" cy="36.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot12"/> </svg>`,
+            13: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg13"> <path d="M 214.1,36.0 L 178.1,234.6 L 122.7,350.8 L 85.9,424.0" class="fairway-corridor"/> <path d="M 214.1,36.0 L 178.1,234.6 L 122.7,350.8 L 85.9,424.0" class="fairway-centerline"/> <circle cx="178.1" cy="234.6" r="4" class="hole-target"/><circle cx="122.7" cy="350.8" r="4" class="hole-target"/> <circle cx="214.1" cy="36.0" r="6" class="tee-marker"/> <circle cx="85.9" cy="424.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot13"/> </svg>`,
+            14: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg14"> <path d="M 164.1,36.0 L 135.9,363.7 L 143.0,424.0" class="fairway-corridor"/> <path d="M 164.1,36.0 L 135.9,363.7 L 143.0,424.0" class="fairway-centerline"/> <circle cx="135.9" cy="363.7" r="4" class="hole-target"/> <circle cx="164.1" cy="36.0" r="6" class="tee-marker"/> <circle cx="143.0" cy="424.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot14"/> </svg>`,
+            15: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg15"> <path d="M 264.0,248.0 L 36.0,212.0" class="fairway-corridor"/> <path d="M 264.0,248.0 L 36.0,212.0" class="fairway-centerline"/> <circle cx="264.0" cy="248.0" r="6" class="tee-marker"/> <circle cx="36.0" cy="212.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot15"/> </svg>`,
+            16: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg16"> <path d="M 223.2,36.0 L 167.9,306.9 L 76.8,424.0" class="fairway-corridor"/> <path d="M 223.2,36.0 L 167.9,306.9 L 76.8,424.0" class="fairway-centerline"/> <circle cx="167.9" cy="306.9" r="4" class="hole-target"/> <circle cx="223.2" cy="36.0" r="6" class="tee-marker"/> <circle cx="76.8" cy="424.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot16"/> </svg>`,
+            17: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg17"> <path d="M 264.0,151.7 L 36.0,308.3" class="fairway-corridor"/> <path d="M 264.0,151.7 L 36.0,308.3" class="fairway-centerline"/> <circle cx="264.0" cy="151.7" r="6" class="tee-marker"/> <circle cx="36.0" cy="308.3" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot17"/> </svg>`,
+            18: `<svg viewBox="0 0 300 460" class="hole-map-svg" id="holeMapSvg18"> <path d="M 135.2,36.0 L 158.6,259.4 L 147.5,398.2 L 164.8,424.0" class="fairway-corridor"/> <path d="M 135.2,36.0 L 158.6,259.4 L 147.5,398.2 L 164.8,424.0" class="fairway-centerline"/> <circle cx="158.6" cy="259.4" r="4" class="hole-target"/><circle cx="147.5" cy="398.2" r="4" class="hole-target"/> <circle cx="135.2" cy="36.0" r="6" class="tee-marker"/> <circle cx="164.8" cy="424.0" r="7" class="green-marker"/> <circle cx="-10" cy="-10" r="7" class="live-dot" id="liveDot18"/> </svg>`,
+        };
+
+        // Local flat-earth projection params per hole (from real KML tee/pin/
+        // center-line survey data) so the live GPS dot lands in the right spot.
+        const COWBOYS_MAPS = {
+            1: { originLat: 32.9574759, originLon: -97.05288491, mLat: 111320.0, mLon: 93405.78, scale: 0.879763, offx: 84.326, offy: 36.0, viewW: 300, viewH: 460 },
+            2: { originLat: 32.961552, originLon: -97.05097691, mLat: 111320.0, mLon: 93401.471, scale: 1.160191, offx: 82.804, offy: 36.0, viewW: 300, viewH: 460 },
+            3: { originLat: 32.9649882, originLon: -97.05005171, mLat: 111320.0, mLon: 93397.839, scale: 1.658967, offx: 36.0, offy: 164.763, viewW: 300, viewH: 460 },
+            4: { originLat: 32.9658684, originLon: -97.0475263, mLat: 111320.0, mLon: 93396.908, scale: 1.201588, offx: 163.736, offy: 36.0, viewW: 300, viewH: 460 },
+            5: { originLat: 32.969967, originLon: -97.047223, mLat: 111320.0, mLon: 93392.575, scale: 0.644467, offx: 264.0, offy: 137.862, viewW: 300, viewH: 460 },
+            6: { originLat: 32.9727354, originLon: -97.05173921, mLat: 111320.0, mLon: 93389.648, scale: 2.999782, offx: 36.162, offy: 36.0, viewW: 300, viewH: 460 },
+            7: { originLat: 32.9742438, originLon: -97.05128831, mLat: 111320.0, mLon: 93388.053, scale: 0.554743, offx: 36.0, offy: 211.353, viewW: 300, viewH: 460 },
+            8: { originLat: 32.9752122, originLon: -97.0463113, mLat: 111320.0, mLon: 93387.029, scale: 0.510967, offx: 264.0, offy: 225.085, viewW: 300, viewH: 460 },
+            9: { originLat: 32.975349, originLon: -97.05134681, mLat: 111320.0, mLon: 93386.884, scale: 0.691317, offx: 36.0, offy: 171.093, viewW: 300, viewH: 460 },
+            10: { originLat: 32.9767314, originLon: -97.0472536, mLat: 111320.0, mLon: 93385.422, scale: 0.942589, offx: 36.0, offy: 128.953, viewW: 300, viewH: 460 },
+            11: { originLat: 32.9786781, originLon: -97.0440631, mLat: 111320.0, mLon: 93383.364, scale: 1.071885, offx: 227.159, offy: 424.0, viewW: 300, viewH: 460 },
+            12: { originLat: 32.9744301, originLon: -97.0453114, mLat: 111320.0, mLon: 93387.856, scale: 1.034933, offx: 82.456, offy: 36.0, viewW: 300, viewH: 460 },
+            13: { originLat: 32.9782353, originLon: -97.0431775, mLat: 111320.0, mLon: 93383.832, scale: 0.760251, offx: 214.119, offy: 424.0, viewW: 300, viewH: 460 },
+            14: { originLat: 32.973162, originLon: -97.0450945, mLat: 111320.0, mLon: 93389.197, scale: 1.306145, offx: 164.107, offy: 424.0, viewW: 300, viewH: 460 },
+            15: { originLat: 32.9700228, originLon: -97.0452124, mLat: 111320.0, mLon: 93392.516, scale: 1.566146, offx: 264.0, offy: 212.034, viewW: 300, viewH: 460 },
+            16: { originLat: 32.9690535, originLon: -97.0483957, mLat: 111320.0, mLon: 93393.541, scale: 1.023987, offx: 223.203, offy: 424.0, viewW: 300, viewH: 460 },
+            17: { originLat: 32.9650701, originLon: -97.05003101, mLat: 111320.0, mLon: 93397.752, scale: 1.551724, offx: 264.0, offy: 308.276, viewW: 300, viewH: 460 },
+            18: { originLat: 32.9628885, originLon: -97.05424391, mLat: 111320.0, mLon: 93400.059, scale: 0.845756, offx: 135.248, offy: 424.0, viewW: 300, viewH: 460 },
+        };
+        // Pin coordinates sourced directly from the course's own Google Earth KML
+        // (surveyed tee/pin points) — verified against tee-to-pin distances matching
+        // the KML's own stated back-tee yardages on every hole.
+        const COWBOYS_GREENS = {
+            1: { lat: 32.961438, lon: -97.051518 },
+            2: { lat: 32.964556, lon: -97.049737 },
+            3: { lat: 32.965695, lon: -97.048580 },
+            4: { lat: 32.968769, lon: -97.047531 },
+            5: { lat: 32.972536, lon: -97.051011 },
+            6: { lat: 32.973897, lon: -97.050927 },
+            7: { lat: 32.974578, lon: -97.046887 },
+            8: { lat: 32.974947, lon: -97.051089 },
+            9: { lat: 32.976880, lon: -97.047815 },
+            10: { lat: 32.978657, lon: -97.044663 },
+            11: { lat: 32.975426, lon: -97.045605 },
+            12: { lat: 32.977798, lon: -97.043914 },
+            13: { lat: 32.973651, lon: -97.044984 },
+            14: { lat: 32.970493, lon: -97.045267 },
+            15: { lat: 32.970229, lon: -97.046771 },
+            16: { lat: 32.965650, lon: -97.049927 },
+            17: { lat: 32.964164, lon: -97.051604 },
+            18: { lat: 32.958767, lon: -97.053870 }
+        };
+
+        const courseData = [
+            { hole: 1, par: 5, hcp: 5, blue: 495, exp: { tee: "Par 5 opener at 495 — your 260 driver clears all three left fairway bunkers (233/257/266) even on a mis-hit, so favor the left-center line without much worry about the sand.", approach: "A full drive leaves roughly 235 in — more than your 3-wood (230), so this is a deliberate three-shot hole. Lay up to a comfortable wedge number rather than force a long second, since greenside bunkers sit front-left (469) and front-right (488) right in that landing zone.", miss: "If you do go for it in two, miss long rather than into the bunkers guarding the 469-488 range — that's squarely in the landing zone for anyone challenging the green in regulation.", green: "Take your two putts here and build off a clean start — commit to the first read of the day." }, beg: { tee: "With four tries off the tee, someone should swing away down the left-center — the three fairway bunkers (233/257/266) are well inside a good drive's carry, so an aggressive line is low-risk for the team.", approach: "Lay up short of the 469-488 zone where the greenside bunkers sit, then have your most confident player attack from a full wedge — no need to force a long second into traffic.", miss: "Long is a fine miss; short-into-the-bunkers is the one to avoid for whoever's ball you're playing.", green: "A clean two-putt start is a great scramble result — no pressure to be a hero on the first green." } },
+            { hole: 2, par: 4, hcp: 17, blue: 326, exp: { tee: "The easiest-rated hole on the card at 326 — driver down the middle, no reason to hold back.", approach: "A good drive leaves a short pitch. There's a greenside bunker front-right, so favor the left half of the green.", miss: "Left is the safer miss around the green; the bunker sits front-right.", green: "A great early birdie chance given the low difficulty rating — take advantage." }, beg: { tee: "Lowest-rated hole on the course — every player should swing freely here, this is a hole to bank a good tee shot.", approach: "Play to the fat left side of the green away from the front-right bunker, and let your steadiest player take the best angle in.", miss: "Left of the green is fine; the sand sits front-right.", green: "A real birdie opportunity for the team — worth being a little aggressive with the putt." } },
+            { hole: 3, par: 3, hcp: 11, blue: 135, exp: { tee: "135-yard par 3 with a hazard fronting the green and three bunkers stacked behind it — take the club that comfortably clears the front, since with the wind today (9-13, gusting higher) coming up short into the hazard is the worse miss.", approach: "Commit to a full swing rather than easing off into the wind — the hazard guards the front, so favor a touch long over anything tentative.", miss: "Better to challenge the bunkers long than dump one in the hazard short — sand is recoverable, water usually isn't.", green: "Three bunkers wrap the back of this green, so anything pin-high or shorter is the safer line." }, beg: { tee: "A hazard guards the front of this green and three bunkers line up behind it — pick the club that comfortably clears the front hazard, and with the wind today it's worth one extra club for the group.", approach: "Center of the green is the play for the team — no reason to challenge tucked pins with bunkers stacked behind.", miss: "If in doubt, favor the bunkers over the water — sand beats a penalty stroke every time.", green: "A stress-free two-putt here keeps the card clean early." } },
+            { hole: 4, par: 4, hcp: 15, blue: 336, exp: { tee: "336 yards with two fairway bunkers stacked on the right (235/250) — your drive is short of the first one, so the middle-left line is clean; only a big miss right finds sand.", approach: "A short approach in from a good drive — there's a greenside bunker front-left, so favor the right half of the green.", miss: "Right of the green is the safer miss; the bunker guards front-left.", green: "A good look at birdie from this range — commit to the read." }, beg: { tee: "Two fairway bunkers sit right at 235-250 — most scramble tee shots finish short of them, so the team can be aggressive down the middle-left.", approach: "Play toward the right side of the green, away from the front-left bunker, for whoever has the best number.", miss: "Right of the green is fine here; the sand is front-left.", green: "Another good scoring hole for the team — take the putt with confidence." } },
+            { hole: 5, par: 4, hcp: 1, blue: 415, exp: { tee: "The #1 handicap hole at 415 — the toughest test on the card, so a driver down the middle is essential; there's little room for recovery on a bad miss here.", approach: "A long iron or hybrid in for most drives. There's a greenside bunker on the right, so favor the left half of the green.", miss: "Left of the green is the safer miss; the sand guards the right side.", green: "A demanding green to match the hole's reputation — a two-putt par here is a genuine win, especially into the afternoon wind." }, beg: { tee: "The hardest-rated hole on the course — everyone should still swing away since you get four tries, but at least one player should favor a safer 3-wood down the middle as team insurance.", approach: "Play to the left side of the green, away from the right greenside bunker, and take the shot that gives the best two-putt look.", miss: "Left is the safer miss on the approach; the bunker sits right.", green: "A bogey here is a completely fine scramble result — don't force anything on the toughest hole on the card." } },
+            { hole: 6, par: 3, hcp: 13, blue: 131, exp: { tee: "Short par 3 at 131 with a hazard fronting the green — a smooth short iron, taking enough club to clear the front hazard comfortably given the wind.", approach: "Aim center-left, away from the greenside bunker on the right.", miss: "Left is the safer miss; a bunker guards the front-right.", green: "A good look at birdie — one of the shorter tests on the front nine, take advantage." }, beg: { tee: "A hazard sits in front of this green, so take enough club to clear it comfortably — no need to be a hero, just get it on or past the front edge.", approach: "Center-left is the target, away from the right greenside bunker.", miss: "Left is fine here; sand guards the right side.", green: "A good chance to bank a stress-free par for the team." } },
+            { hole: 7, par: 4, hcp: 3, blue: 414, exp: { tee: "414 yards and the 3rd-toughest hole on the card — the fairway bunker on the left sits at 306, comfortably past your carry unless you catch one flush with extra roll, so favor center-right off the tee.", approach: "A long approach in — no flagged greenside hazard here, but it's a tough-rated hole, so play for the center of the green rather than a tucked pin.", miss: "Play conservatively — with the wind up today, a smart bogey beats forcing a shot that finds trouble.", green: "A demanding green on a demanding hole — a two-putt is a real accomplishment." }, beg: { tee: "One of the toughest holes on the course — the left fairway bunker at 306 is beyond most scramble tee shots, so the team can play aggressively down the middle.", approach: "Play safely to the center of the green — this isn't the hole to get greedy on a tough-rated test.", miss: "Stay centered; the hole plays tough regardless of a specific greenside hazard.", green: "A bogey is a solid scramble result on the 3rd-hardest hole on the card." } },
+            { hole: 8, par: 5, hcp: 7, blue: 481, exp: { tee: "481-yard par 5 with a hazard crossing around 331 — your drive stays well short of it, so the tee shot is stress-free; it only matters when deciding whether to go for the green in two.", approach: "After a good drive you'll have roughly 220 left — inside your 3-wood/hybrid range, but two greenside bunkers (437 front-right, 450 front-left) pinch the entry, so make sure you have a clean number before committing. Laying up to a full wedge is the safer, still-scoring play.", miss: "If you lay up, erring a little short costs nothing — the real trouble is threading the tightly-bunkered entrance to the green.", green: "A great two-putt (or better) chance if you play the entry smart rather than forcing a shot through the bunkers." }, beg: { tee: "A hazard crosses well out at 331 — no tee shot concern for the team, so swing away and set up a good angle for the second shot.", approach: "The green entrance is pinched by bunkers front-left and front-right, so lay up to a full wedge rather than force it through a tight gap — let your steadiest wedge player finish the job.", miss: "Coming up short of the bunkers is totally fine; the real risk is threading the gap between them.", green: "A good scoring chance for the team if you play the layup smart." } },
+            { hole: 9, par: 4, hcp: 9, blue: 372, exp: { tee: "372 yards with a fairway bunker right at 214 — well short of your drive, so it's only a concern with a shorter club off the tee; driver down the middle is fine.", approach: "A mid-iron in from a good drive. There's a greenside bunker front-left, so favor the right half of the green.", miss: "Right of the green is the safer miss; sand guards front-left.", green: "A solid two-putt chance to finish the front nine." }, beg: { tee: "The fairway bunker at 214 is short of most drives, so the team can be aggressive off this tee.", approach: "Favor the right side of the green, away from the front-left bunker.", miss: "Right of the green is fine; sand is front-left.", green: "A good hole to bank a solid score before the turn." } },
+            { hole: 10, par: 4, hcp: 18, blue: 316, exp: { tee: "The easiest-rated hole on the entire course at 316 — no bunkers flagged anywhere on this hole, so swing away with confidence to open the back nine.", approach: "A short approach in from a good drive — this is a green to attack, nothing guarding it.", miss: "Nothing specific to avoid here — play your normal shot.", green: "One of your best birdie chances on the course — take advantage." }, beg: { tee: "No bunkers on this entire hole and the lowest difficulty rating on the course — every player should swing away here.", approach: "Attack this green freely — nothing is flagged guarding it, so take your best number in.", miss: "No specific hazard to play around on this one.", green: "A great chance for a team birdie to start the back nine strong." } },
+            { hole: 11, par: 4, hcp: 6, blue: 368, exp: { tee: "368 yards with a fairway bunker left at 265 — just beyond your typical carry, so a normal drive down the middle-right keeps you clear of it.", approach: "A mid-iron in. There's a greenside bunker front-right, so favor the left half of the green.", miss: "Left of the green is the safer miss; sand is front-right.", green: "A fairly demanding hole by rating — a two-putt is a good result." }, beg: { tee: "The left fairway bunker at 265 is right around scramble-drive range, so aim the tee shots a touch right of center to stay clear of it.", approach: "Favor the left side of the green, away from the front-right bunker.", miss: "Left is the safer miss on the approach.", green: "A solid two-putt keeps the momentum going." } },
+            { hole: 12, par: 4, hcp: 10, blue: 408, exp: { tee: "408 yards — driver down the middle sets up a mid-iron approach into a green pinched by bunkers on both sides (405 left, 415 right), so accuracy on the approach matters more than the tee shot here.", approach: "Take dead aim at the center of the green — the bunkers on both sides mean a pulled or pushed approach finds sand quickly.", miss: "Center is the only truly safe miss here; both sides are bunkered right at the green's edge.", green: "A tightly-guarded green — a two-putt from anywhere on the surface is a good result." }, beg: { tee: "Driver down the middle sets up the approach — the real defense on this hole is at the green, not the tee shot.", approach: "This green is bunkered on both sides right at the putting surface, so the team's best approach should aim dead center, not at a tucked pin.", miss: "Center is the play; both sides are bunkered tight to the green.", green: "A solid two-putt is the target here — no need to get cute with a risky pin." } },
+            { hole: 13, par: 5, hcp: 2, blue: 518, exp: { tee: "The 2nd-hardest hole on the course at 518 — a hazard crosses the fairway between roughly 495 and 544, exactly where a big drive plus a long second would land, so plan your yardages carefully rather than just grip it and rip it.", approach: "After a good drive you'll have about 258 left — beyond your 3-wood, so this is a clear three-shot hole. Lay up well short of the hazard (before 495) rather than land in that danger zone, then a comfortable short iron in over the greenside bunker at 551.", miss: "Coming up short of the hazard on your layup is exactly the plan — don't get greedy trying to squeeze a long second past it.", green: "A demanding closing stretch begins here — a two-putt par is a great result." }, beg: { tee: "One of the toughest holes on the course, and a hazard crosses the fairway around 495-544 — that's beyond scramble range off the tee, so swing away.", approach: "Lay up short of the 495-544 hazard zone as a team rather than have anyone try to carry it — patience pays off, then a short approach over the greenside bunker (551) to finish.", miss: "Short of the hazard is always the right miss on the layup — never challenge that crossing hazard directly.", green: "A bogey is a fine result on the 2nd-hardest hole — don't press for more." } },
+            { hole: 14, par: 4, hcp: 16, blue: 313, exp: { tee: "A short 313-yard par 4 — driver easily clears the left fairway bunker at 218 and should stop well short of the cluster of greenside bunkers (284-293) that ring the front of this green, leaving a simple short pitch.", approach: "With bunkers on both the right (284/293) and front-left (293), take dead aim at the center of the green rather than trying to work it close to a tucked pin.", miss: "Center of the green is the play — bunkers wrap both sides of the front entrance.", green: "A great scoring opportunity if you keep the pitch shot simple and centered." }, beg: { tee: "A short hole where a good drive can finish just short of a cluster of greenside bunkers — every player should swing away here, it's a low-risk tee shot.", approach: "The green is bunkered on both the right and front-left, so play to the center rather than a tucked pin — let your steadiest short-game player finish it off.", miss: "Center is the target; bunkers wrap both sides of the entrance.", green: "A great chance for a team birdie — keep the short approach simple." } },
+            { hole: 15, par: 3, hcp: 14, blue: 135, exp: { tee: "A 135-yard par 3 bunkered on both sides close to the green (108 left, 112 right) — take enough club and commit, since the bunkers start well short of the putting surface on both sides.", approach: "Aim center of the green — both sides are bunkered early, so there isn't much margin on either edge.", miss: "Long is the better miss here; the bunkers guard both sides closer to the front.", green: "A demanding little green — a two-putt is a solid result." }, beg: { tee: "Bunkers guard both sides of this green fairly close in — take the club that gets comfortably to the center, no need to flirt with either edge.", approach: "Center of the green is the play for the team — the bunkers start early on both sides.", miss: "Long over the green beats finding sand short on either side.", green: "A solid two-putt is a good result on this tightly-bunkered green." } },
+            { hole: 16, par: 4, hcp: 4, blue: 413, exp: { tee: "413 yards and one of the toughest holes on the back nine — a hazard crosses around 304, well short of your drive, but it signals this hole demands a full, committed drive to have any real shot at the green in two.", approach: "A long approach in — bunkers surround the green (398 left, 403/419 right), so take enough club and favor the center rather than challenging either side.", miss: "Center is the safest miss; bunkers wrap both sides of this green.", green: "A tough green to match a tough hole — a two-putt par here is a genuinely good score." }, beg: { tee: "One of the harder-rated holes on the back nine — the hazard at 304 is short of scramble drives, so the team should swing away and focus on distance.", approach: "This green is well-bunkered on both sides, so play to the center as a team rather than chase a tucked pin.", miss: "Center of the green is the play; sand wraps both sides.", green: "A bogey is a totally fine result on one of the tougher holes on the course." } },
+            { hole: 17, par: 3, hcp: 8, blue: 117, exp: { tee: "A short 117-yard par 3 with three bunkers stacked down the left side — favor the right half of the green with your tee shot to stay clear of all three.", approach: "Take dead aim at the center-right of the green — the left side is heavily bunkered from front to back.", miss: "Right is the safe miss; all the trouble here is on the left.", green: "A great chance to pick up a stroke before the finishing stretch." }, beg: { tee: "Three bunkers line the left side of this green, so aim the tee shot toward the center-right for the whole group.", approach: "Center-right is the target — avoid the left side entirely on this one.", miss: "Right is fine; everything dangerous here is on the left.", green: "A good chance for a team birdie before the closing hole." } },
+            { hole: 18, par: 5, hcp: 12, blue: 489, exp: { tee: "The closing hole at 489 — two left fairway bunkers (200/221) and one right (254) line the driving area, but all sit short of your carry, so a confident drive down the middle clears everything cleanly.", approach: "There's a bunker in the middle of the fairway at 418 that can catch a well-struck second shot if you're going for the green — after a good drive you'll have around 229 left, right in 3-wood/hybrid range, so pick your line around that middle bunker rather than through it. Greenside bunkers front-left (468) and front-right (478) also guard the entrance, so a smart layup to a full wedge is a very reasonable way to finish.", miss: "If you go for the green, miss well left or right of that 418 middle bunker rather than trying to carry directly over it.", green: "A good closing look either way — two putts here is a nice way to finish at Cowboys." }, beg: { tee: "The fairway bunkers here (200-254) are all short of a scramble drive, so the team can swing away confidently to close out the round.", approach: "There's a bunker sitting in the middle of the fairway around 418 and the green is guarded by sand on both sides at the entrance (468/478) — lay up smart as a team and finish with a full wedge rather than forcing a shot through traffic.", miss: "Avoid the middle fairway bunker at 418 on the layup, and don't crowd the greenside bunkers on the finish.", green: "A clean two-putt to close out the scramble — a great way to finish the round at Cowboys." } }
+        ];
+
+        const TOTAL_HOLES = courseData.length;
+        const STORAGE_KEY = 'cowboysGcCaddy';
+        const SCORES_KEY = 'cowboysGcScores';
+
+        let currentHole = 1;
+        let currentGolfer = 'exp';
+        let currentView = 'hole';
+        let scores = new Array(TOTAL_HOLES).fill(null);
+        let rangeOn = false;
+        let rangeWatchId = null;
+        let lastRangePos = null;
+
+        // Full-bag distances, farthest to shortest, for club-selection suggestions.
+        // Provided directly by the user — not extrapolated. Single table since this
+        // course only has one golfer profile (format toggle doesn't change your swing).
+        const CLUB_TABLES = {
+            exp: [
+                { club: 'Driver', yards: 260 },
+                { club: '3-Wood', yards: 230 },
+                { club: 'Hybrid 2', yards: 215 },
+                { club: 'Hybrid 4', yards: 202 },
+                { club: '4-Iron', yards: 185 },
+                { club: '5-Iron', yards: 172 },
+                { club: '6-Iron', yards: 158 },
+                { club: '7-Iron', yards: 145 },
+                { club: '8-Iron', yards: 134 },
+                { club: '9-Iron', yards: 123 },
+                { club: 'PW', yards: 109 },
+                { club: 'GW', yards: 98 },
+                { club: 'SW', yards: 78 }
+            ]
+        };
+
+        function clubTableHTML(profile, label) {
+            const rows = CLUB_TABLES[profile].map(e => `<tr><td>${e.club}</td><td class="ci-yd">${e.yards}y</td></tr>`).join('');
+            return `<table><caption>${label}</caption>${rows}</table>`;
+        }
+
+        function toggleClubInfo() {
+            const panel = document.getElementById('clubInfoPanel');
+            const isOpen = panel.style.display !== 'none';
+            if (isOpen) {
+                panel.style.display = 'none';
+                return;
+            }
+            panel.innerHTML = `
+                <h3>Club Distances</h3>
+                <div class="club-info-cols">
+                    ${clubTableHTML('exp', '12 HCP')}
+                </div>`;
+            panel.style.display = '';
+        }
+
+        function nearestClub(yards, profile) {
+            const table = CLUB_TABLES.exp;
+            return table.reduce((best, entry) =>
+                Math.abs(entry.yards - yards) < Math.abs(best.yards - yards) ? entry : best
+            ).club;
+        }
+
+        function loadState() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (saved) {
+                    if (saved.hole >= 1 && saved.hole <= TOTAL_HOLES) currentHole = saved.hole;
+                    if (saved.golfer === 'exp' || saved.golfer === 'beg') currentGolfer = saved.golfer;
+                }
+            } catch (e) { /* ignore corrupt/missing state */ }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ hole: currentHole, golfer: currentGolfer }));
+            } catch (e) { /* storage unavailable (private mode, etc.) — non-fatal */ }
+        }
+
+        function loadScores() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(SCORES_KEY));
+                if (Array.isArray(saved) && saved.length === TOTAL_HOLES) scores = saved;
+            } catch (e) { /* ignore corrupt/missing scores */ }
+        }
+
+        function saveScores() {
+            try {
+                localStorage.setItem(SCORES_KEY, JSON.stringify(scores));
+            } catch (e) { /* storage unavailable — non-fatal */ }
+        }
+
+        function initTabs() {
+            const container = document.getElementById('tabContainer');
+            container.innerHTML = '';
+
+            const scBtn = document.createElement('button');
+            scBtn.className = `tab-btn scorecard-btn ${currentView === 'scorecard' ? 'active' : ''}`;
+            scBtn.innerText = '📋 Scorecard';
+            scBtn.id = 'scorecardTabBtn';
+            scBtn.onclick = () => showScorecardView();
+            container.appendChild(scBtn);
+
+            for (let i = 1; i <= TOTAL_HOLES; i++) {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${currentView === 'hole' && i === currentHole ? 'active' : ''}`;
+                btn.innerText = `Hole ${i}`;
+                btn.onclick = () => showHoleView(i);
+                container.appendChild(btn);
+            }
+        }
+
+        function stepHole(delta) {
+            if (currentView !== 'hole') return;
+            let next = currentHole + delta;
+            if (next < 1) next = TOTAL_HOLES;
+            if (next > TOTAL_HOLES) next = 1;
+            selectHole(next);
+        }
+
+        function showHoleView(num) {
+            currentView = 'hole';
+            document.getElementById('holeView').style.display = '';
+            document.getElementById('scorecardView').style.display = 'none';
+            selectHole(num);
+        }
+
+        function showScorecardView() {
+            currentView = 'scorecard';
+            if (rangeOn) toggleRangefinder();
+            document.getElementById('holeView').style.display = 'none';
+            document.getElementById('scorecardView').style.display = '';
+            initTabs();
+            renderScorecard();
+        }
+
+        function selectHole(num) {
+            currentHole = num;
+            const d = courseData[num - 1];
+
+            initTabs();
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+
+            if (rangeOn) updateRangeReading();
+
+            document.getElementById('holeCounter').innerText = `HOLE ${num} OF ${TOTAL_HOLES}`;
+
+            document.getElementById('holeHeader').innerHTML = `
+                <div class="hole-title">Hole ${d.hole} (Par ${d.par})</div>
+                <div class="badge-group">
+                    <span class="badge badge-white">🔵 ${d.blue}y</span>
+                    <span class="badge badge-hcp">HCP ${d.hcp}</span>
+                </div>`;
+
+            const diagramCard = document.getElementById('diagramCard');
+            const svg = COWBOYS_SVG[d.hole];
+            diagramCard.innerHTML = svg || `<div class="img-fallback">📷 Map unavailable for Hole ${d.hole}.</div>`;
+            if (rangeOn) updateMapDot(lastRangePos);
+
+            renderSummary();
+            saveState();
+        }
+
+        function setGolferType(type) {
+            currentGolfer = type;
+            document.getElementById('btnExp').classList.toggle('active', type === 'exp');
+            document.getElementById('btnBeg').classList.toggle('active', type === 'beg');
+            renderSummary();
+            if (rangeOn) updateRangeReading();
+            saveState();
+        }
+
+        function renderSummary() {
+            const d = courseData[currentHole - 1];
+            const area = document.getElementById('summaryArea');
+            if (currentGolfer === 'exp') {
+                area.innerHTML = `
+                    <div class="section-box"><h4>🎯 Tee Strategy</h4><p>${d.exp.tee}</p></div>
+                    <div class="section-box"><h4>⛳ Approach</h4><p>${d.exp.approach}</p></div>
+                    <div class="section-box"><h4>🛡️ Safe Miss</h4><p>${d.exp.miss}</p></div>
+                    <div class="green-detail"><strong>🚩 Green:</strong> ${d.exp.green}</div>`;
+            } else {
+                area.innerHTML = `
+                    <div class="section-box beg"><h4>🎲 Team Tee Shot</h4><p>${d.beg.tee}</p></div>
+                    <div class="section-box beg"><h4>⛳ Team Approach</h4><p>${d.beg.approach}</p></div>
+                    <div class="section-box beg"><h4>🛡️ Risk Management</h4><p>${d.beg.miss}</p></div>
+                    <div class="green-detail"><strong>🚩 Green (Team):</strong> ${d.beg.green}</div>`;
+            }
+        }
+
+        function haversineYards(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
+            const dPhi = (lat2 - lat1) * Math.PI / 180;
+            const dLambda = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dPhi / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dLambda / 2) ** 2;
+            const meters = 2 * R * Math.asin(Math.sqrt(a));
+            return meters * 1.09361;
+        }
+
+        function updateRangeReading(pos) {
+            const reading = document.getElementById('rangeReading');
+            if (!reading) return;
+            if (pos) lastRangePos = pos;
+            const usePos = pos || lastRangePos;
+            const green = COWBOYS_GREENS[currentHole];
+            if (!usePos || !green) return;
+            const yd = haversineYards(usePos.coords.latitude, usePos.coords.longitude, green.lat, green.lon);
+            const club = nearestClub(yd, currentGolfer);
+            reading.innerText = `${Math.round(yd)} yds to green · ${club} suggested`;
+            updateMapDot(usePos);
+        }
+
+        // Projects live GPS onto the hole's schematic map using the same local
+        // flat-earth transform baked into COWBOYS_MAPS at build time from real
+        // KML survey coordinates (tee/pin/center-line), so the dot lands accurately.
+        function updateMapDot(pos) {
+            if (!pos) return;
+            const p = COWBOYS_MAPS[currentHole];
+            const dot = document.getElementById(`liveDot${currentHole}`);
+            if (!p || !dot) return;
+            const xm = (pos.coords.longitude - p.originLon) * p.mLon;
+            const ym = (pos.coords.latitude - p.originLat) * p.mLat;
+            const svgx = xm * p.scale + p.offx;
+            const svgy = p.viewH - (ym * p.scale + p.offy);
+            dot.setAttribute('cx', svgx.toFixed(1));
+            dot.setAttribute('cy', svgy.toFixed(1));
+            dot.classList.add('on');
+        }
+
+        function toggleRangefinder() {
+            const btn = document.getElementById('btnRange');
+            const reading = document.getElementById('rangeReading');
+            if (!rangeOn) {
+                if (!('geolocation' in navigator)) {
+                    reading.innerText = 'GPS not available on this device/browser.';
+                    return;
+                }
+                rangeWatchId = navigator.geolocation.watchPosition(
+                    (pos) => { updateRangeReading(pos); },
+                    (err) => {
+                        reading.innerText = err.code === err.PERMISSION_DENIED
+                            ? 'Location permission denied.'
+                            : 'Unable to get location.';
+                    },
+                    { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+                );
+                rangeOn = true;
+                btn.classList.add('on');
+                btn.innerText = '📍 Rangefinder On';
+                reading.innerText = 'Locating…';
+            } else {
+                if (rangeWatchId !== null) navigator.geolocation.clearWatch(rangeWatchId);
+                rangeWatchId = null;
+                rangeOn = false;
+                btn.classList.remove('on');
+                btn.innerText = '📍 Rangefinder Off';
+                reading.innerText = '';
+                const dot = document.getElementById(`liveDot${currentHole}`);
+                if (dot) dot.classList.remove('on');
+            }
+        }
+
+        function updateScore(holeIdx, value) {
+            const n = parseInt(value, 10);
+            scores[holeIdx] = (isNaN(n) || n <= 0) ? null : n;
+            saveScores();
+            refreshScorecardTotals(holeIdx);
+        }
+
+        // Patches totals/diff labels in place rather than re-rendering the table,
+        // so score <input> elements are never recreated and keyboard tab order survives.
+        function refreshScorecardTotals(holeIdx) {
+            const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+            const diffEl = document.getElementById(`sc-diff-${holeIdx}`);
+            if (diffEl) {
+                const s = scores[holeIdx];
+                const diff = s == null ? 0 : s - courseData[holeIdx].par;
+                diffEl.className = `sc-diff ${diff < 0 ? 'under' : diff > 0 ? 'over' : ''}`;
+                diffEl.textContent = diff === 0 ? '' : (diff > 0 ? `+${diff}` : `${diff}`);
+            }
+
+            const out = sumRange(0, 9);
+            const inn = sumRange(9, 18);
+            const tot = (out != null && inn != null) ? out + inn : null;
+            const parTotal = courseData.reduce((a, d) => a + d.par, 0);
+            const toPar = tot == null ? null : tot - parTotal;
+
+            setText('sc-front-total', out == null ? '—' : out);
+            setText('sc-back-total', inn == null ? '—' : inn);
+            setText('sc-val-out', out == null ? '—' : out);
+            setText('sc-val-in', inn == null ? '—' : inn);
+            setText('sc-val-tot', tot == null ? '—' : tot);
+            setText('sc-val-topar', toPar == null ? '—' : (toPar > 0 ? '+' + toPar : toPar));
+        }
+
+        function resetScores() {
+            if (!confirm('Clear all scores for this round?')) return;
+            scores = new Array(TOTAL_HOLES).fill(null);
+            saveScores();
+            renderScorecard();
+        }
+
+        function sumRange(start, end) {
+            let sum = 0, hasAny = false;
+            for (let i = start; i < end; i++) {
+                if (scores[i] != null) { sum += scores[i]; hasAny = true; }
+            }
+            return hasAny ? sum : null;
+        }
+
+        function scoreDiffLabel(holeIdx) {
+            const s = scores[holeIdx];
+            const diff = s == null ? 0 : s - courseData[holeIdx].par;
+            const cls = diff < 0 ? 'under' : diff > 0 ? 'over' : '';
+            const label = diff === 0 ? '' : (diff > 0 ? `+${diff}` : `${diff}`);
+            return `<span class="sc-diff ${cls}" id="sc-diff-${holeIdx}">${label}</span>`;
+        }
+
+        function renderNineTable(startIdx, endIdx, title) {
+            let holeCells = '', parCells = '', hcpCells = '', scoreCells = '';
+            for (let i = startIdx; i < endIdx; i++) {
+                const d = courseData[i];
+                holeCells += `<th>${d.hole}</th>`;
+                parCells += `<td>${d.par}</td>`;
+                hcpCells += `<td>${d.hcp}</td>`;
+                const val = scores[i] == null ? '' : scores[i];
+                scoreCells += `<td><input class="sc-score" type="number" min="1" max="15" inputmode="numeric" value="${val}" onchange="updateScore(${i}, this.value)">${scoreDiffLabel(i)}</td>`;
+            }
+            const total = sumRange(startIdx, endIdx);
+            const parTotal = courseData.slice(startIdx, endIdx).reduce((a, d) => a + d.par, 0);
+            const totalId = title === 'Front 9' ? 'sc-front-total' : 'sc-back-total';
+            return `
+                <div class="scorecard-card">
+                    <h3>${title} (Par ${parTotal})</h3>
+                    <div class="sc-table-wrap">
+                        <table class="sc-table">
+                            <tr><td class="sc-label">Hole</td>${holeCells}<td class="sc-total">${title === 'Front 9' ? 'Out' : 'In'}</td></tr>
+                            <tr><td class="sc-label">Par</td>${parCells}<td class="sc-total">${parTotal}</td></tr>
+                            <tr><td class="sc-label">Hcp</td>${hcpCells}<td class="sc-total">—</td></tr>
+                            <tr><td class="sc-label">Score</td>${scoreCells}<td class="sc-total" id="${totalId}">${total == null ? '—' : total}</td></tr>
+                        </table>
+                    </div>
+                </div>`;
+        }
+
+        function renderScorecard() {
+            const view = document.getElementById('scorecardView');
+            const out = sumRange(0, 9);
+            const inn = sumRange(9, 18);
+            const tot = (out != null && inn != null) ? out + inn : null;
+            const parTotal = courseData.reduce((a, d) => a + d.par, 0);
+            const toPar = tot == null ? null : tot - parTotal;
+            view.innerHTML = `
+                ${renderNineTable(0, 9, 'Front 9')}
+                ${renderNineTable(9, 18, 'Back 9')}
+                <div class="scorecard-card">
+                    <div class="sc-summary">
+                        <div class="sc-summary-item"><div class="sc-summary-value" id="sc-val-out">${out == null ? '—' : out}</div><div class="sc-summary-label">Out</div></div>
+                        <div class="sc-summary-item"><div class="sc-summary-value" id="sc-val-in">${inn == null ? '—' : inn}</div><div class="sc-summary-label">In</div></div>
+                        <div class="sc-summary-item"><div class="sc-summary-value" id="sc-val-tot">${tot == null ? '—' : tot}</div><div class="sc-summary-label">Total</div></div>
+                        <div class="sc-summary-item"><div class="sc-summary-value" id="sc-val-topar">${toPar == null ? '—' : (toPar > 0 ? '+' + toPar : toPar)}</div><div class="sc-summary-label">To Par</div></div>
+                    </div>
+                    <button class="sc-reset" onclick="resetScores()">Reset Round</button>
+                </div>`;
+        }
+
+        function initSwipe() {
+            const zone = document.querySelector('.content-grid');
+            let startX = 0, startY = 0, tracking = false;
+
+            zone.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                tracking = true;
+            }, { passive: true });
+
+            zone.addEventListener('touchend', (e) => {
+                if (!tracking) return;
+                tracking = false;
+                const dx = e.changedTouches[0].clientX - startX;
+                const dy = e.changedTouches[0].clientY - startY;
+                if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                    stepHole(dx < 0 ? 1 : -1);
+                }
+            }, { passive: true });
+        }
+
+        function initKeyboard() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') stepHole(1);
+                if (e.key === 'ArrowLeft') stepHole(-1);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            loadScores();
+            selectHole(currentHole);
+            setGolferType(currentGolfer);
+            initSwipe();
+            initKeyboard();
+        });
+    </script>
+</body>
+</html>
