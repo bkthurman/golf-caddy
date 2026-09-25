@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Caddy</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --bg-dark: #12181b;
+            --bg-darker: #0a0e11;
+            --card-bg: #1e262c;
+            --card-bg-2: #232c33;
+            --accent-green: #2e7d32;
+            --accent-green-2: #43a047;
+            --accent-gold: #d4af37;
+            --accent-gold-2: #f0d878;
+            --text-light: #eceff1;
+            --text-dim: #b0bec5;
+            --border-color: #2c3840;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            background: var(--bg-darker);
+            color: var(--text-light);
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        /* ---------- Hero ---------- */
+        .hero {
+            position: relative;
+            min-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.8s ease-in-out;
+            filter: saturate(1.05);
+        }
+
+        .hero-bg.active { opacity: 1; }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(10,14,17,0.55) 0%, rgba(10,14,17,0.75) 60%, rgba(10,14,17,0.95) 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 720px;
+        }
+
+        .hero-eyebrow {
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            color: var(--accent-gold-2);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.4rem, 7vw, 4.2rem);
+            background: linear-gradient(90deg, var(--accent-gold-2), var(--accent-gold) 60%, #a8842a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        .hero p.tagline {
+            font-size: clamp(1rem, 2.4vw, 1.25rem);
+            color: var(--text-dim);
+            margin-bottom: 34px;
+        }
+
+        .hero-scroll {
+            position: relative;
+            z-index: 2;
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            animation: bob 2.2s ease-in-out infinite;
+        }
+
+        @keyframes bob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(6px); }
+        }
+
+        .hero-dots {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            gap: 8px;
+            margin-top: 28px;
+        }
+
+        .hero-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: background 0.4s;
+        }
+        .hero-dot.active { background: var(--accent-gold); }
+
+        /* ---------- Courses ---------- */
+        .section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 70px 24px;
+        }
+
+        .section-heading {
+            text-align: center;
+            margin-bottom: 42px;
+        }
+
+        .section-heading .eyebrow {
+            font-size: 0.78rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            margin-bottom: 8px;
+        }
+
+        .section-heading h2 {
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            color: var(--text-light);
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 28px;
+        }
+
+        .course-card {
+            background: linear-gradient(160deg, var(--card-bg-2), var(--card-bg));
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .course-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 32px rgba(0,0,0,0.5);
+        }
+
+        .course-card .thumb-wrap {
+            position: relative;
+            height: 190px;
+            overflow: hidden;
+        }
+
+        .course-card .thumb-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .course-card .thumb-fade {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(18,24,27,0) 40%, var(--card-bg) 100%);
+        }
+
+        .course-card .card-body {
+            padding: 20px 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .course-card h3 {
+            font-size: 1.25rem;
+            color: #fff;
+        }
+
+        .course-card .loc {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            margin-top: -8px;
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stat-chip {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px 9px;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+
+        .format-chip {
+            display: inline-block;
+            background: linear-gradient(160deg, var(--accent-green-2), #1b5e20);
+            color: #fff;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            font-weight: bold;
+            width: fit-content;
+        }
+
+        .snapshot {
+            background: rgba(212,175,55,0.08);
+            border: 1px dashed rgba(212,175,55,0.4);
+            border-radius: 8px;
+            padding: 9px 11px;
+            font-size: 0.78rem;
+            color: var(--accent-gold-2);
+        }
+
+        .snapshot.empty {
+            color: var(--text-dim);
+            border-color: var(--border-color);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .enter-btn {
+            margin-top: auto;
+            text-align: center;
+            background: linear-gradient(160deg, var(--accent-gold-2), var(--accent-gold));
+            color: #2a2005;
+            font-weight: bold;
+            padding: 11px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* ---------- Map ---------- */
+        #courseMap {
+            width: 100%;
+            height: 420px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+            background: #1a1a1a;
+        }
+
+        #courseMap .leaflet-tile-pane {
+            filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.7);
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: var(--card-bg);
+            color: var(--text-light);
+            border-radius: 8px;
+        }
+        .leaflet-popup-tip { background: var(--card-bg); }
+        .leaflet-popup-content a {
+            color: var(--accent-gold-2);
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 24px 50px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            opacity: 0.7;
+        }
+
+        @media (max-width: 640px) {
+            .section { padding: 50px 18px; }
+            #courseMap { height: 320px; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero" id="hero">
+        <div class="hero-bg active" style="background-image:url('assets/hero-tenison.jpg')"></div>
+        <div class="hero-bg" style="background-image:url('assets/hero-hawkscreek.jpg')"></div>
+        <div class="hero-bg" style="background-image:url('assets/hero-cowboys.jpg')"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-eyebrow">Pro Caddy Field Manuals</div>
+            <h1>GOLF CADDY</h1>
+            <p class="tagline">Hole-by-hole strategy, live GPS rangefinders, and club selection — built for our group, one course at a time.</p>
+        </div>
+        <div class="hero-dots" id="heroDots">
+            <div class="hero-dot active"></div>
+            <div class="hero-dot"></div>
+            <div class="hero-dot"></div>
+        </div>
+        <div class="hero-scroll">▾ Scroll to pick a course</div>
+    </section>
+
+    <section class="section" id="courses">
+        <div class="section-heading">
+            <div class="eyebrow">Tee It Up</div>
+            <h2>Choose Your Course</h2>
+        </div>
+        <div class="course-grid" id="courseGrid"></div>
+    </section>
+
+    <section class="section" id="mapSection">
+        <div class="section-heading">
+            <div class="eyebrow">Around DFW</div>
+            <h2>Where We Play</h2>
+        </div>
+        <div id="courseMap"></div>
+    </section>
+
+    <footer>Golf Caddy — built by the group, for the group.</footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const COURSES = [
+            {
+                name: "Tenison Glen",
+                loc: "Dallas, TX",
+                href: "Courses/Tennison-Park-The-Glen/index.html",
+                thumb: "assets/card-tenison.jpg",
+                par: 72,
+                yardage: 5900,
+                tee: "White",
+                format: "Stroke Play + Beginner",
+                storageKey: "tenisonGlenCaddy",
+                scoresKey: "tenisonGlenScores",
+                lat: 32.79289, lon: -96.73525
+            },
+            {
+                name: "Hawks Creek",
+                loc: "Westworth Village, TX",
+                href: "Courses/Hawks-Creek/index.html",
+                thumb: "assets/card-hawkscreek.jpg",
+                par: 72,
+                yardage: 6040,
+                tee: "White",
+                format: "Stroke Play + Beginner",
+                storageKey: "hawksCreekCaddy",
+                scoresKey: "hawksCreekScores",
+                lat: 32.76009, lon: -97.43464
+            },
+            {
+                name: "Cowboys Golf Club",
+                loc: "Grapevine, TX",
+                href: "Courses/Cowboys-Golf-Club/index.html",
+                thumb: "assets/card-cowboys.jpg",
+                par: 72,
+                yardage: 6182,
+                tee: "Blue",
+                format: "Stroke Play + Scramble",
+                storageKey: "cowboysGcCaddy",
+                scoresKey: "cowboysGcScores",
+                lat: 32.957476, lon: -97.052885
+            }
+        ];
+
+        function snapshotFor(course) {
+            let scores = null, state = null;
+            try { scores = JSON.parse(localStorage.getItem(course.scoresKey)); } catch (e) {}
+            try { state = JSON.parse(localStorage.getItem(course.storageKey)); } catch (e) {}
+
+            const played = Array.isArray(scores) ? scores.filter(s => s != null).length : 0;
+            if (played === 0) {
+                return { text: "⛳ Not played yet", empty: true };
+            }
+            const lastHole = state && state.hole ? state.hole : null;
+            const total = Array.isArray(scores) ? scores.reduce((a, s) => a + (s || 0), 0) : 0;
+            return {
+                text: `🏌️ In progress — ${played}/18 holes logged (${total} strokes)${lastHole ? ` · last viewed Hole ${lastHole}` : ''}`,
+                empty: false
+            };
+        }
+
+        function renderCourses() {
+            const grid = document.getElementById('courseGrid');
+            grid.innerHTML = COURSES.map(c => {
+                const snap = snapshotFor(c);
+                return `
+                <a class="course-card" href="${c.href}">
+                    <div class="thumb-wrap">
+                        <img src="${c.thumb}" alt="${c.name}">
+                        <div class="thumb-fade"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3>${c.name}</h3>
+                        <div class="loc">${c.loc}</div>
+                        <div class="stat-row">
+                            <span class="stat-chip">Par ${c.par}</span>
+                            <span class="stat-chip">${c.yardage}y (${c.tee})</span>
+                        </div>
+                        <div class="format-chip">${c.format}</div>
+                        <div class="snapshot ${snap.empty ? 'empty' : ''}">${snap.text}</div>
+                        <div class="enter-btn">Enter Course →</div>
+                    </div>
+                </a>`;
+            }).join('');
+        }
+
+        function initHeroSlideshow() {
+            const bgs = document.querySelectorAll('.hero-bg');
+            const dots = document.querySelectorAll('.hero-dot');
+            let idx = 0;
+            setInterval(() => {
+                bgs[idx].classList.remove('active');
+                dots[idx].classList.remove('active');
+                idx = (idx + 1) % bgs.length;
+                bgs[idx].classList.add('active');
+                dots[idx].classList.add('active');
+            }, 5500);
+        }
+
+        function initMap() {
+            const map = L.map('courseMap', { scrollWheelZoom: false }).setView([32.87, -97.15], 9);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            const goldIcon = L.divIcon({
+                className: '',
+                html: '<div style="width:16px;height:16px;border-radius:50%;background:#d4af37;border:3px solid #12181b;box-shadow:0 0 6px rgba(0,0,0,0.6);"></div>',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+
+            const bounds = [];
+            COURSES.forEach(c => {
+                const marker = L.marker([c.lat, c.lon], { icon: goldIcon }).addTo(map);
+                marker.bindPopup(`<strong>${c.name}</strong><br>${c.loc}<br><a href="${c.href}">Enter course →</a>`);
+                bounds.push([c.lat, c.lon]);
+            });
+            map.fitBounds(bounds, { padding: [40, 40] });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCourses();
+            initHeroSlideshow();
+            initMap();
+        });
+    </script>
+</body>
+</html>
